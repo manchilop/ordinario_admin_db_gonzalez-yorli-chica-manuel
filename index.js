@@ -30,6 +30,35 @@ app.listen(port, () => {
 // Middleware
 app.use(bodyParser.json());
 
+// **1. Rutas para estudiantes**
+app.get('/api/estudiantes', (req, res) => {
+  connection.query('SELECT * FROM estudiantes', (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(results);
+  });
+});
+
+app.post('/api/estudiantes', (req, res) => {
+  const { nombre, apellidos, email, matricula, edad, semestre, usuario_creacion } = req.body;
+  const fecha_creacion = new Date(); // Fecha y hora actuales
+
+  // Validaciones simples
+  if (!nombre || !apellidos || !email || !matricula || !edad || !semestre || !usuario_creacion) {
+    return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+  }
+
+  const query = 'INSERT INTO estudiantes (nombre, apellidos, email, matricula, edad, semestre, usuario_creacion, fecha_creacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+  
+  connection.query(query, [nombre, apellidos, email, matricula, edad, semestre, usuario_creacion, fecha_creacion], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.status(201).json({ message: 'Estudiante creado.', id: results.insertId });
+  });
+});
+
 
 
 
