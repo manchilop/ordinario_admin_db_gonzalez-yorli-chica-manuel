@@ -31,8 +31,8 @@ const port = process.env.PORT || 3000;  // Usar un puerto configurado en el .env
 app.use(express.json());
 
 // Escuchar en todas las interfaces de red
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Servidor corriendo en http://0.0.0.0:${port}`);
+app.listen(port, () => {
+  console.log(`Servidor corriendo en el:${port}`);
 });
 
 // Función común para manejar la consulta `GET`
