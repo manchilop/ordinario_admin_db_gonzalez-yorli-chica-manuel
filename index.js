@@ -1,93 +1,95 @@
+require('dotenv').config(); // Cargar las variables de entorno desde el archivo .env
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const mysql = require('mysql2');
 
 // Configuración de la conexión a la base de datos
 const connection = mysql.createConnection({
-    host: 'localhost', // Cambia si tu base de datos está en la nube
-    user: 'root',
-    password: 'rootpassword', // Cambia por tu contraseña
-    database: 'ordinario_admin'
-  });
-  
-  // Conexión a la base de datos
-  connection.connect((err) => {
-    if (err) {
-      console.error('Error al conectar a la base de datos:', err);
-      return;
-    }
-    console.log('Conexión exitosa a la base de datos.');
-  });
+  host: process.env.DB_HOST,          // Usar la variable de entorno para el host (ej. IP pública de la base de datos)
+  user: process.env.DB_USER,          // Usar la variable de entorno para el usuario
+  password: process.env.DB_PASSWORD,  // Usar la variable de entorno para la contraseña
+  database: process.env.DB_DATABASE   // Usar la variable de entorno para la base de datos
+});
 
-  // Configurar Express
+// Conexión a la base de datos
+connection.connect((err) => {
+  if (err) {
+    console.error('Error al conectar a la base de datos:', err);
+    return;
+  }
+  console.log('Conexión exitosa a la base de datos.');
+});
+
+// Configurar Express
 const app = express();
-const port = 3000;
-// Iniciar el servidor
-app.listen(port, () => {
-    console.log(`Servidor corriendo en http://localhost:${port}`);
-  });
 
-// Middleware
-app.use(bodyParser.json());
+// Establecer el puerto para el servidor
+const port = process.env.PORT || 3000;  // Usar un puerto configurado en el .env o el puerto 3000 por defecto
 
-// **1. Rutas para estudiantes**
-app.get('/api/estudiantes', (req, res) => {
-  connection.query('SELECT * FROM estudiantes', (err, results) => {
+// Middleware para parsear el cuerpo de las solicitudes como JSON
+app.use(express.json());
+
+// Escuchar en todas las interfaces de red
+app.listen(port, '0.0.0.0', () => {
+  console.log(`Servidor corriendo en http://0.0.0.0:${port}`);
+});
+
+// Función común para manejar la consulta `GET`
+function handleGetRequest(table, res) {
+  connection.query(`SELECT * FROM ${table}`, (err, results) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
     res.json(results);
   });
-});
+}
 
-app.post('/api/estudiantes', (req, res) => {
-  const { nombre, apellidos, email, matricula, edad, semestre, usuario_creacion } = req.body;
+// Función común para manejar la inserción `POST`
+function handlePostRequest(table, requiredFields, body, res) {
   const fecha_creacion = new Date(); // Fecha y hora actuales
 
-  // Validaciones simples
-  if (!nombre || !apellidos || !email || !matricula || !edad || !semestre || !usuario_creacion) {
-    return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+  // Validaciones simples para todos los campos requeridos
+  for (const field of requiredFields) {
+    if (!body[field]) {
+      return res.status(400).json({ error: `El campo ${field} es obligatorio.` });
+    }
   }
 
-  const query = 'INSERT INTO estudiantes (nombre, apellidos, email, matricula, edad, semestre, usuario_creacion, fecha_creacion) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-  
-  connection.query(query, [nombre, apellidos, email, matricula, edad, semestre, usuario_creacion, fecha_creacion], (err, results) => {
+  // Construcción de la consulta
+  const query = `INSERT INTO ${table} (${requiredFields.join(', ')}, fecha_creacion) 
+                 VALUES (${requiredFields.map(() => '?').join(', ')}, ?)`;
+
+  const values = [...requiredFields.map(field => body[field]), fecha_creacion];
+
+  connection.query(query, values, (err, results) => {
     if (err) {
       return res.status(500).json({ error: err.message });
     }
-    res.status(201).json({ message: 'Estudiante creado.', id: results.insertId });
+    res.status(201).json({ message: `${table.slice(0, -1).toUpperCase()} creado.`, id: results.insertId });
   });
+}
+
+// **1. Rutas para estudiantes**
+app.get('/api/estudiantes', (req, res) => {
+  handleGetRequest('estudiantes', res);
+});
+
+app.post('/api/estudiantes', (req, res) => {
+  const requiredFields = ['nombre', 'apellidos', 'email', 'matricula', 'edad', 'semestre', 'usuario_creacion'];
+  handlePostRequest('estudiantes', requiredFields, req.body, res);
 });
 
 // **2. Rutas para maestros**
 app.get('/api/maestros', (req, res) => {
-  connection.query('SELECT * FROM maestros', (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.json(results);
-  });
+  handleGetRequest('maestros', res);
 });
 
 app.post('/api/maestros', (req, res) => {
-  const { nombre, edad, telefono, correo, usuario_creacion } = req.body;
-  const fecha_creacion = new Date(); // Fecha y hora actuales
-
-  // Validaciones simples
-  if (!nombre || !edad || !telefono || !correo || !usuario_creacion) {
-    return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
-  }
-
-  // Consulta para insertar los datos, incluyendo fecha_creacion y usuario_creacion
-  const query = 'INSERT INTO maestros (nombre, edad, telefono, correo, usuario_creacion, fecha_creacion) VALUES (?, ?, ?, ?, ?, ?)';
-
-  connection.query(query, [nombre, edad, telefono, correo, usuario_creacion, fecha_creacion], (err, results) => {
-    if (err) {
-      return res.status(500).json({ error: err.message });
-    }
-    res.status(201).json({ message: 'Maestro creado.', id: results.insertId });
-  });
+  const requiredFields = ['nombre', 'edad', 'telefono', 'correo', 'usuario_creacion'];
+  handlePostRequest('maestros', requiredFields, req.body, res);
 });
+
 
 
 
