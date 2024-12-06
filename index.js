@@ -30,6 +30,34 @@ app.listen(port, () => {
 // Middleware
 app.use(bodyParser.json());
 
+// **2. Rutas para maestros**
+app.get('/api/maestros', (req, res) => {
+  connection.query('SELECT * FROM maestros', (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.json(results);
+  });
+});
 
+app.post('/api/maestros', (req, res) => {
+  const { nombre, edad, telefono, correo, usuario_creacion } = req.body;
+  const fecha_creacion = new Date(); // Fecha y hora actuales
+
+  // Validaciones simples
+  if (!nombre || !edad || !telefono || !correo || !usuario_creacion) {
+    return res.status(400).json({ error: 'Todos los campos son obligatorios.' });
+  }
+
+  // Consulta para insertar los datos, incluyendo fecha_creacion y usuario_creacion
+  const query = 'INSERT INTO maestros (nombre, edad, telefono, correo, usuario_creacion, fecha_creacion) VALUES (?, ?, ?, ?, ?, ?)';
+
+  connection.query(query, [nombre, edad, telefono, correo, usuario_creacion, fecha_creacion], (err, results) => {
+    if (err) {
+      return res.status(500).json({ error: err.message });
+    }
+    res.status(201).json({ message: 'Maestro creado.', id: results.insertId });
+  });
+});
 
 
