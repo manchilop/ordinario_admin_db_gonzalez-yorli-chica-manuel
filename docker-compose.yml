@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-ordinario-db
+    restart: always
+    ports:
+      - "3306:3306" # Exponemos el puerto 3306 para conectar desde tu máquina local
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword # Cambia esta contraseña por algo seguro
+      MYSQL_DATABASE: ordinario_admin  # Nombre de la base de datos
+      MYSQL_USER: admin_user           # Usuario personalizado
+      MYSQL_PASSWORD: adminpassword    # Contraseña del usuario
+    volumes:
+      - mysql_data:/var/lib/mysql      # Persistencia de datos en caso de reinicio
+      - ./DB local/init-scripts:/docker-entrypoint-initdb.d # Carpeta para scripts SQL iniciales
+    networks:
+      - mysql-network
+
+networks:
+  mysql-network:
+    driver: bridge
+
+volumes:
+  mysql_data:

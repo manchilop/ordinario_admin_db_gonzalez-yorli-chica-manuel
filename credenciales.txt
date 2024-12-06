@@ -1,0 +1,4 @@
+endpoint/host: ls-880ecf7b2cea86907682221c85660a2ac0bf3b67.c9ccuqws8c17.us-east-1.rds.amazonaws.com
+port: 3306
+user: dbmasteruser
+contraseña: 6VZ}8+*-,&ubEg7PE*|kAv.w{~g3+e~c
