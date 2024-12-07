@@ -90,15 +90,14 @@ app.post('/api/maestros', (req, res) => {
   handlePostRequest('maestros', requiredFields, req.body, res);
 });
 
-// **3. Rutas para asignaturas**
-app.get('/api/asignaturas', (req, res) => {
-  handleGetRequest('materias', res); // `materias` corresponde al nombre de la tabla en la base de datos
+// **3. Rutas para calificaciones**
+app.get('/api/calificaciones', (req, res) => {
+  handleGetRequest('calificaciones', res);
 });
 
-app.post('/api/asignaturas', (req, res) => {
-  const requiredFields = ['nombre', 'profesor_id', 'usuario_creacion'];
-  handlePostRequest('materias', requiredFields, req.body, res);
+app.post('/api/calificaciones', (req, res) => {
+  const requiredFields = ['estudiante_id', 'maestro_id', 'materia_id', 'usuario_creacion'];
+  handlePostRequest('calificaciones', requiredFields, req.body, res);
 });
-
 
 
