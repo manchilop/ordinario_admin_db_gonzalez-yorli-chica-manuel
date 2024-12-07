@@ -100,4 +100,14 @@ app.post('/api/calificaciones', (req, res) => {
   handlePostRequest('calificaciones', requiredFields, req.body, res);
 });
 
+// **4. Rutas para asignaturas**
+app.get('/api/asignaturas', (req, res) => {
+  handleGetRequest('materias', res); // `materias` corresponde al nombre de la tabla en la base de datos
+});
+
+app.post('/api/asignaturas', (req, res) => {
+  const requiredFields = ['nombre', 'profesor_id', 'usuario_creacion'];
+  handlePostRequest('materias', requiredFields, req.body, res);
+});
+
 
