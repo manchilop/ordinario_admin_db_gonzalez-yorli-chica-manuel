@@ -96,7 +96,7 @@ app.get('/api/calificaciones', (req, res) => {
 });
 
 app.post('/api/calificaciones', (req, res) => {
-  const requiredFields = ['estudiante_id', 'maestro_id', 'materia_id', 'usuario_creacion'];
+  const requiredFields = ['estudiante_id', 'maestro_id', 'materia_id', 'create_user'];
   handlePostRequest('calificaciones', requiredFields, req.body, res);
 });
 
@@ -106,7 +106,7 @@ app.get('/api/asignaturas', (req, res) => {
 });
 
 app.post('/api/asignaturas', (req, res) => {
-  const requiredFields = ['nombre', 'profesor_id', 'usuario_creacion'];
+  const requiredFields = ['nombre', 'profesor_id', 'create_user'];
   handlePostRequest('materias', requiredFields, req.body, res);
 });
 
